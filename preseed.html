@@ -1,68 +1,129 @@
-<!DOCTYPE html>
-<html lang="fr">
-<head>
-    <meta charset="UTF-8">
-    <title>Preseed Debian - Adrien</title>
-    <style>
-        body {
-            font-family: Consolas, monospace;
-            background-color: #f4f4f4;
-            padding: 20px;
-        }
-        pre {
-            background-color: #2d2d2d;
-            color: #f8f8f2;
-            padding: 20px;
-            border-radius: 8px;
-            overflow-x: auto;
-        }
-        h1 {
-            font-size: 1.5em;
-            color: #333;
-        }
-    </style>
-</head>
-<body>
-    <h1>Fichier preseed Debian</h1>
-    <pre>
-### Langue et Localisation
-d-i debian-installer/locale string fr_FR.UTF-8
-d-i keyboard-configuration/xkb-keymap select fr(latin9)
-d-i time/zone string Europe/Paris
-d-i clock-setup/utc boolean false
-
-### Réseau
-d-i netcfg/choose_interface select enp0s25
-d-i netcfg/get_hostname string debian
-
-### Partitionnement automatique (LVM)
-d-i partman-auto/method string lvm
-d-i partman-lvm/device_remove_lvm boolean true
-d-i partman-auto/choose_recipe select atomic
-d-i partman-auto/confirm boolean true
-d-i partman-auto/confirm_nooverwrite boolean true
-
-### Création de l'utilisateur "Adrien"
-d-i passwd/user-fullname string Adrien
-d-i passwd/username string Adrien
-d-i passwd/user-password password Adrien
-d-i passwd/user-password-again password Adrien
-
-### Mot de passe root (à éviter si sudo est utilisé)
-d-i passwd/root-password password Adrien
-d-i passwd/root-password-again password Adrien
-
-### Installation de paquets supplémentaires
-d-i pkgsel/include string openssh-server htop
-
-### Grub
-d-i grub-installer/only_debian boolean true
-d-i grub-installer/bootdev string /dev/sda
-
-### Commande post-installation (création de fichier pour Adrien)
-d-i preseed/late_command string \
-  in-target touch /home/Adrien/helloworld.txt; \
-  in-target chown Adrien:Adrien /home/Adrien/helloworld.txt;
-    </pre>
-</body>
-</html>
+<unattend xmlns="urn:schemas-microsoft-com:unattend" xmlns:wcm="http://schemas.microsoft.com/WMIConfig/2002/State">
+<!-- https://schneegans.de/windows/unattend-generator/?LanguageMode=Unattended&UILanguage=fr-FR&Locale=fr-FR&Keyboard=0000040c&GeoLocation=84&ProcessorArchitecture=amd64&BypassRequirementsCheck=true&ComputerNameMode=Random&CompactOsMode=Default&TimeZoneMode=Explicit&TimeZone=Romance+Standard+Time&PartitionMode=Interactive&DiskAssertionMode=Skip&WindowsEditionMode=Generic&WindowsEdition=pro&InstallFromMode=Automatic&PEMode=Default&UserAccountMode=Unattended&AccountName0=root&AccountDisplayName0=&AccountPassword0=root&AccountGroup0=Administrators&AccountName1=adrien&AccountDisplayName1=&AccountPassword1=adrien&AccountGroup1=Users&AutoLogonMode=Own&PasswordExpirationMode=Unlimited&LockoutMode=Default&HideFiles=Hidden&TaskbarSearch=Label&TaskbarIconsMode=Default&StartTilesMode=Default&StartPinsMode=Empty&EffectsMode=Default&DesktopIconsMode=Default&StartFoldersMode=Default&WifiMode=Unattended&WifiName=iPhone+d%27Adrien&WifiAuthentication=WPA2PSK&WifiPassword=Aout2021.&ExpressSettings=DisableAll&LockKeysMode=Configure&CapsLockInitial=Off&CapsLockBehavior=Toggle&NumLockInitial=On&NumLockBehavior=Toggle&ScrollLockInitial=Off&ScrollLockBehavior=Toggle&StickyKeysMode=Default&ColorMode=Default&WallpaperMode=Default&LockScreenMode=Default&RemoveCalculator=true&RemoveClock=true&RemoveInternetExplorer=true&RemoveOffice365=true&RemovePhotos=true&RemovePowerShell2=true&RemovePowerShellISE=true&RemoveWordPad=true&WdacMode=Skip -->
+<settings pass="offlineServicing"/>
+<settings pass="windowsPE">
+<component name="Microsoft-Windows-International-Core-WinPE" processorArchitecture="amd64" publicKeyToken="31bf3856ad364e35" language="neutral" versionScope="nonSxS">
+<UILanguage>fr-FR</UILanguage>
+</component>
+<component name="Microsoft-Windows-Setup" processorArchitecture="amd64" publicKeyToken="31bf3856ad364e35" language="neutral" versionScope="nonSxS">
+<UserData>
+<ProductKey>
+<Key>VK7JG-NPHTM-C97JM-9MPGT-3V66T</Key>
+<WillShowUI>OnError</WillShowUI>
+</ProductKey>
+<AcceptEula>true</AcceptEula>
+</UserData>
+<UseConfigurationSet>false</UseConfigurationSet>
+<RunSynchronous>
+<RunSynchronousCommand wcm:action="add">
+<Order>1</Order>
+<Path>reg.exe add "HKLM\SYSTEM\Setup\LabConfig" /v BypassTPMCheck /t REG_DWORD /d 1 /f</Path>
+</RunSynchronousCommand>
+<RunSynchronousCommand wcm:action="add">
+<Order>2</Order>
+<Path>reg.exe add "HKLM\SYSTEM\Setup\LabConfig" /v BypassSecureBootCheck /t REG_DWORD /d 1 /f</Path>
+</RunSynchronousCommand>
+<RunSynchronousCommand wcm:action="add">
+<Order>3</Order>
+<Path>reg.exe add "HKLM\SYSTEM\Setup\LabConfig" /v BypassRAMCheck /t REG_DWORD /d 1 /f</Path>
+</RunSynchronousCommand>
+</RunSynchronous>
+</component>
+</settings>
+<settings pass="generalize"/>
+<settings pass="specialize">
+<component name="Microsoft-Windows-Deployment" processorArchitecture="amd64" publicKeyToken="31bf3856ad364e35" language="neutral" versionScope="nonSxS">
+<RunSynchronous>
+<RunSynchronousCommand wcm:action="add">
+<Order>1</Order>
+<Path>powershell.exe -WindowStyle Normal -NoProfile -Command "$xml = [xml]::new(); $xml.Load('C:\Windows\Panther\unattend.xml'); $sb = [scriptblock]::Create( $xml.unattend.Extensions.ExtractScript ); Invoke-Command -ScriptBlock $sb -ArgumentList $xml;"</Path>
+</RunSynchronousCommand>
+<RunSynchronousCommand wcm:action="add">
+<Order>2</Order>
+<Path>powershell.exe -WindowStyle Normal -NoProfile -Command "Get-Content -LiteralPath 'C:\Windows\Setup\Scripts\Specialize.ps1' -Raw | Invoke-Expression;"</Path>
+</RunSynchronousCommand>
+<RunSynchronousCommand wcm:action="add">
+<Order>3</Order>
+<Path>reg.exe load "HKU\DefaultUser" "C:\Users\Default\NTUSER.DAT"</Path>
+</RunSynchronousCommand>
+<RunSynchronousCommand wcm:action="add">
+<Order>4</Order>
+<Path>powershell.exe -WindowStyle Normal -NoProfile -Command "Get-Content -LiteralPath 'C:\Windows\Setup\Scripts\DefaultUser.ps1' -Raw | Invoke-Expression;"</Path>
+</RunSynchronousCommand>
+<RunSynchronousCommand wcm:action="add">
+<Order>5</Order>
+<Path>reg.exe unload "HKU\DefaultUser"</Path>
+</RunSynchronousCommand>
+</RunSynchronous>
+</component>
+<component name="Microsoft-Windows-Shell-Setup" processorArchitecture="amd64" publicKeyToken="31bf3856ad364e35" language="neutral" versionScope="nonSxS">
+<TimeZone>Romance Standard Time</TimeZone>
+</component>
+</settings>
+<settings pass="auditSystem"/>
+<settings pass="auditUser"/>
+<settings pass="oobeSystem">
+<component name="Microsoft-Windows-International-Core" processorArchitecture="amd64" publicKeyToken="31bf3856ad364e35" language="neutral" versionScope="nonSxS">
+<InputLocale>040c:0000040c</InputLocale>
+<SystemLocale>fr-FR</SystemLocale>
+<UILanguage>fr-FR</UILanguage>
+<UserLocale>fr-FR</UserLocale>
+</component>
+<component name="Microsoft-Windows-Shell-Setup" processorArchitecture="amd64" publicKeyToken="31bf3856ad364e35" language="neutral" versionScope="nonSxS">
+<UserAccounts>
+<LocalAccounts>
+<LocalAccount wcm:action="add">
+<Name>root</Name>
+<DisplayName/>
+<Group>Administrators</Group>
+<Password>
+<Value>root</Value>
+<PlainText>true</PlainText>
+</Password>
+</LocalAccount>
+<LocalAccount wcm:action="add">
+<Name>adrien</Name>
+<DisplayName/>
+<Group>Users</Group>
+<Password>
+<Value>adrien</Value>
+<PlainText>true</PlainText>
+</Password>
+</LocalAccount>
+</LocalAccounts>
+</UserAccounts>
+<AutoLogon>
+<Username>root</Username>
+<Enabled>true</Enabled>
+<LogonCount>1</LogonCount>
+<Password>
+<Value>root</Value>
+<PlainText>true</PlainText>
+</Password>
+</AutoLogon>
+<OOBE>
+<ProtectYourPC>3</ProtectYourPC>
+<HideEULAPage>true</HideEULAPage>
+<HideOnlineAccountScreens>false</HideOnlineAccountScreens>
+</OOBE>
+<FirstLogonCommands>
+<SynchronousCommand wcm:action="add">
+<Order>1</Order>
+<CommandLine>powershell.exe -WindowStyle Normal -NoProfile -Command "Get-Content -LiteralPath 'C:\Windows\Setup\Scripts\FirstLogon.ps1' -Raw | Invoke-Expression;"</CommandLine>
+</SynchronousCommand>
+</FirstLogonCommands>
+</component>
+</settings>
+<Extensions xmlns="https://schneegans.de/windows/unattend-generator/">
+<ExtractScript> param( [xml] $Document ); foreach( $file in $Document.unattend.Extensions.File ) { $path = [System.Environment]::ExpandEnvironmentVariables( $file.GetAttribute( 'path' ) ); mkdir -Path( $path | Split-Path -Parent ) -ErrorAction 'SilentlyContinue'; $encoding = switch( [System.IO.Path]::GetExtension( $path ) ) { { $_ -in '.ps1', '.xml' } { [System.Text.Encoding]::UTF8; } { $_ -in '.reg', '.vbs', '.js' } { [System.Text.UnicodeEncoding]::new( $false, $true ); } default { [System.Text.Encoding]::Default; } }; $bytes = $encoding.GetPreamble() + $encoding.GetBytes( $file.InnerText.Trim() ); [System.IO.File]::WriteAllBytes( $path, $bytes ); } </ExtractScript>
+<File path="C:\Windows\Setup\Scripts\RemovePackages.ps1"> $selectors = @( 'Microsoft.WindowsCalculator'; 'Microsoft.WindowsAlarms'; 'Microsoft.MicrosoftOfficeHub'; 'Microsoft.Windows.Photos'; ); $getCommand = { Get-AppxProvisionedPackage -Online; }; $filterCommand = { $_.DisplayName -eq $selector; }; $removeCommand = { [CmdletBinding()] param( [Parameter( Mandatory, ValueFromPipeline )] $InputObject ); process { $InputObject | Remove-AppxProvisionedPackage -AllUsers -Online -ErrorAction 'Continue'; } }; $type = 'Package'; $logfile = 'C:\Windows\Setup\Scripts\RemovePackages.log'; & { $installed = & $getCommand; foreach( $selector in $selectors ) { $result = [ordered] @{ Selector = $selector; }; $found = $installed | Where-Object -FilterScript $filterCommand; if( $found ) { $result.Output = $found | & $removeCommand; if( $? ) { $result.Message = "$type removed."; } else { $result.Message = "$type not removed."; $result.Error = $Error[0]; } } else { $result.Message = "$type not installed."; } $result | ConvertTo-Json -Depth 3 -Compress; } } *>&1 >> $logfile; </File>
+<File path="C:\Windows\Setup\Scripts\RemoveCapabilities.ps1"> $selectors = @( 'Browser.InternetExplorer'; 'Microsoft.Windows.PowerShell.ISE'; 'Microsoft.Windows.WordPad'; ); $getCommand = { Get-WindowsCapability -Online | Where-Object -Property 'State' -NotIn -Value @( 'NotPresent'; 'Removed'; ); }; $filterCommand = { ($_.Name -split '~')[0] -eq $selector; }; $removeCommand = { [CmdletBinding()] param( [Parameter( Mandatory, ValueFromPipeline )] $InputObject ); process { $InputObject | Remove-WindowsCapability -Online -ErrorAction 'Continue'; } }; $type = 'Capability'; $logfile = 'C:\Windows\Setup\Scripts\RemoveCapabilities.log'; & { $installed = & $getCommand; foreach( $selector in $selectors ) { $result = [ordered] @{ Selector = $selector; }; $found = $installed | Where-Object -FilterScript $filterCommand; if( $found ) { $result.Output = $found | & $removeCommand; if( $? ) { $result.Message = "$type removed."; } else { $result.Message = "$type not removed."; $result.Error = $Error[0]; } } else { $result.Message = "$type not installed."; } $result | ConvertTo-Json -Depth 3 -Compress; } } *>&1 >> $logfile; </File>
+<File path="C:\Windows\Setup\Scripts\RemoveFeatures.ps1"> $selectors = @( 'MicrosoftWindowsPowerShellV2Root'; ); $getCommand = { Get-WindowsOptionalFeature -Online | Where-Object -Property 'State' -NotIn -Value @( 'Disabled'; 'DisabledWithPayloadRemoved'; ); }; $filterCommand = { $_.FeatureName -eq $selector; }; $removeCommand = { [CmdletBinding()] param( [Parameter( Mandatory, ValueFromPipeline )] $InputObject ); process { $InputObject | Disable-WindowsOptionalFeature -Online -Remove -NoRestart -ErrorAction 'Continue'; } }; $type = 'Feature'; $logfile = 'C:\Windows\Setup\Scripts\RemoveFeatures.log'; & { $installed = & $getCommand; foreach( $selector in $selectors ) { $result = [ordered] @{ Selector = $selector; }; $found = $installed | Where-Object -FilterScript $filterCommand; if( $found ) { $result.Output = $found | & $removeCommand; if( $? ) { $result.Message = "$type removed."; } else { $result.Message = "$type not removed."; $result.Error = $Error[0]; } } else { $result.Message = "$type not installed."; } $result | ConvertTo-Json -Depth 3 -Compress; } } *>&1 >> $logfile; </File>
+<File path="C:\Windows\Setup\Scripts\Wifi.xml"> <WLANProfile xmlns="http://www.microsoft.com/networking/WLAN/profile/v1"> <name>iPhone d'Adrien</name> <SSIDConfig> <SSID> <hex>6950686F6E6520642741647269656E</hex> <name>iPhone d'Adrien</name> </SSID> </SSIDConfig> <connectionType>ESS</connectionType> <connectionMode>auto</connectionMode> <MSM> <security> <authEncryption> <authentication>WPA2PSK</authentication> <encryption>AES</encryption> <useOneX>false</useOneX> </authEncryption> <sharedKey> <keyType>passPhrase</keyType> <protected>false</protected> <keyMaterial>Aout2021.</keyMaterial> </sharedKey> </security> </MSM> </WLANProfile> </File>
+<File path="C:\Windows\Setup\Scripts\SetStartPins.ps1"> $json = '{"pinnedList":[]}'; if( [System.Environment]::OSVersion.Version.Build -lt 20000 ) { return; } $key = 'Registry::HKLM\SOFTWARE\Microsoft\PolicyManager\current\device\Start'; New-Item -Path $key -ItemType 'Directory' -ErrorAction 'SilentlyContinue'; Set-ItemProperty -LiteralPath $key -Name 'ConfigureStartPins' -Value $json -Type 'String'; </File>
+<File path="C:\Windows\Setup\Scripts\Specialize.ps1"> $scripts = @( { reg.exe add "HKLM\SYSTEM\Setup\MoSetup" /v AllowUpgradesWithUnsupportedTPMOrCPU /t REG_DWORD /d 1 /f; }; { Get-Content -LiteralPath 'C:\Windows\Setup\Scripts\RemovePackages.ps1' -Raw | Invoke-Expression; }; { Get-Content -LiteralPath 'C:\Windows\Setup\Scripts\RemoveCapabilities.ps1' -Raw | Invoke-Expression; }; { Get-Content -LiteralPath 'C:\Windows\Setup\Scripts\RemoveFeatures.ps1' -Raw | Invoke-Expression; }; { netsh.exe wlan add profile filename="C:\Windows\Setup\Scripts\Wifi.xml" user=all; }; { netsh.exe wlan connect name="iPhone d'Adrien" ssid="iPhone d'Adrien"; }; { net.exe accounts /maxpwage:UNLIMITED; }; { Get-Content -LiteralPath 'C:\Windows\Setup\Scripts\SetStartPins.ps1' -Raw | Invoke-Expression; }; ); & { [float] $complete = 0; [float] $increment = 100 / $scripts.Count; foreach( $script in $scripts ) { Write-Progress -Activity 'Running scripts to customize your Windows installation. Do not close this window.' -PercentComplete $complete; '*** Will now execute command «{0}».' -f $( $str = $script.ToString().Trim() -replace '\s+', ' '; $max = 100; if( $str.Length -le $max ) { $str; } else { $str.Substring( 0, $max - 1 ) + '…'; } ); $start = [datetime]::Now; & $script; '*** Finished executing command after {0:0} ms.' -f [datetime]::Now.Subtract( $start ).TotalMilliseconds; "`r`n" * 3; $complete += $increment; } } *>&1 >> "C:\Windows\Setup\Scripts\Specialize.log"; </File>
+<File path="C:\Windows\Setup\Scripts\UserOnce.ps1"> $scripts = @( { Set-ItemProperty -LiteralPath 'Registry::HKCU\Software\Microsoft\Windows\CurrentVersion\Search' -Name 'SearchboxTaskbarMode' -Type 'DWord' -Value 3; }; { Get-Process -Name 'explorer' -ErrorAction 'SilentlyContinue' | Where-Object -FilterScript { $_.SessionId -eq ( Get-Process -Id $PID ).SessionId; } | Stop-Process -Force; }; ); & { [float] $complete = 0; [float] $increment = 100 / $scripts.Count; foreach( $script in $scripts ) { Write-Progress -Activity 'Running scripts to configure this user account. Do not close this window.' -PercentComplete $complete; '*** Will now execute command «{0}».' -f $( $str = $script.ToString().Trim() -replace '\s+', ' '; $max = 100; if( $str.Length -le $max ) { $str; } else { $str.Substring( 0, $max - 1 ) + '…'; } ); $start = [datetime]::Now; & $script; '*** Finished executing command after {0:0} ms.' -f [datetime]::Now.Subtract( $start ).TotalMilliseconds; "`r`n" * 3; $complete += $increment; } } *>&1 >> "$env:TEMP\UserOnce.log"; </File>
+<File path="C:\Windows\Setup\Scripts\DefaultUser.ps1"> $scripts = @( { reg.exe add "HKU\DefaultUser\Software\Microsoft\Internet Explorer\LowRegistry\Audio\PolicyConfig\PropertyStore" /f; }; { foreach( $root in 'Registry::HKU\.DEFAULT', 'Registry::HKU\DefaultUser' ) { Set-ItemProperty -LiteralPath "$root\Control Panel\Keyboard" -Name 'InitialKeyboardIndicators' -Type 'String' -Value 2 -Force; } }; { reg.exe add "HKU\DefaultUser\Software\Microsoft\Windows\CurrentVersion\RunOnce" /v "UnattendedSetup" /t REG_SZ /d "powershell.exe -WindowStyle Normal -NoProfile -Command \""Get-Content -LiteralPath 'C:\Windows\Setup\Scripts\UserOnce.ps1' -Raw | Invoke-Expression;\""" /f; }; ); & { [float] $complete = 0; [float] $increment = 100 / $scripts.Count; foreach( $script in $scripts ) { Write-Progress -Activity 'Running scripts to modify the default user’’s registry hive. Do not close this window.' -PercentComplete $complete; '*** Will now execute command «{0}».' -f $( $str = $script.ToString().Trim() -replace '\s+', ' '; $max = 100; if( $str.Length -le $max ) { $str; } else { $str.Substring( 0, $max - 1 ) + '…'; } ); $start = [datetime]::Now; & $script; '*** Finished executing command after {0:0} ms.' -f [datetime]::Now.Subtract( $start ).TotalMilliseconds; "`r`n" * 3; $complete += $increment; } } *>&1 >> "C:\Windows\Setup\Scripts\DefaultUser.log"; </File>
+<File path="C:\Windows\Setup\Scripts\FirstLogon.ps1"> $scripts = @( { Set-ItemProperty -LiteralPath 'Registry::HKLM\SOFTWARE\Microsoft\Windows NT\CurrentVersion\Winlogon' -Name 'AutoLogonCount' -Type 'DWord' -Force -Value 0; }; ); & { [float] $complete = 0; [float] $increment = 100 / $scripts.Count; foreach( $script in $scripts ) { Write-Progress -Activity 'Running scripts to finalize your Windows installation. Do not close this window.' -PercentComplete $complete; '*** Will now execute command «{0}».' -f $( $str = $script.ToString().Trim() -replace '\s+', ' '; $max = 100; if( $str.Length -le $max ) { $str; } else { $str.Substring( 0, $max - 1 ) + '…'; } ); $start = [datetime]::Now; & $script; '*** Finished executing command after {0:0} ms.' -f [datetime]::Now.Subtract( $start ).TotalMilliseconds; "`r`n" * 3; $complete += $increment; } } *>&1 >> "C:\Windows\Setup\Scripts\FirstLogon.log"; </File>
+</Extensions>
+</unattend>
