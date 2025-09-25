@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <title>Preseed Debian - Adrien</title>
+    <style>
+        body {
+            font-family: Consolas, monospace;
+            background-color: #f4f4f4;
+            padding: 20px;
+        }
+        pre {
+            background-color: #2d2d2d;
+            color: #f8f8f2;
+            padding: 20px;
+            border-radius: 8px;
+            overflow-x: auto;
+        }
+        h1 {
+            font-size: 1.5em;
+            color: #333;
+        }
+    </style>
+</head>
+<body>
+    <h1>Fichier preseed Debian</h1>
+    <pre>
+### Langue et Localisation
+d-i debian-installer/locale string fr_FR.UTF-8
+d-i keyboard-configuration/xkb-keymap select fr(latin9)
+d-i time/zone string Europe/Paris
+d-i clock-setup/utc boolean false
+
+### Réseau
+d-i netcfg/choose_interface select enp0s25
+d-i netcfg/get_hostname string debian
+
+### Partitionnement automatique (LVM)
+d-i partman-auto/method string lvm
+d-i partman-lvm/device_remove_lvm boolean true
+d-i partman-auto/choose_recipe select atomic
+d-i partman-auto/confirm boolean true
+d-i partman-auto/confirm_nooverwrite boolean true
+
+### Création de l'utilisateur "Adrien"
+d-i passwd/user-fullname string Adrien
+d-i passwd/username string Adrien
+d-i passwd/user-password password Adrien
+d-i passwd/user-password-again password Adrien
+
+### Mot de passe root (à éviter si sudo est utilisé)
+d-i passwd/root-password password Adrien
+d-i passwd/root-password-again password Adrien
+
+### Installation de paquets supplémentaires
+d-i pkgsel/include string openssh-server htop
+
+### Grub
+d-i grub-installer/only_debian boolean true
+d-i grub-installer/bootdev string /dev/sda
+
+### Commande post-installation (création de fichier pour Adrien)
+d-i preseed/late_command string \
+  in-target touch /home/Adrien/helloworld.txt; \
+  in-target chown Adrien:Adrien /home/Adrien/helloworld.txt;
+    </pre>
+</body>
+</html>
